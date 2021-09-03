@@ -1,69 +1,46 @@
-import { Component, OnInit } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  Validators
-} from '@angular/forms';
-import Validation from './utils/validation';
+import {Component, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {DummyService} from "./service/dummy.service";
+import {Name} from "./service/name";
 
 @Component({
-  selector: 'my-app',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+    selector: 'my-app',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  form: FormGroup;
-  submitted = false;
+    form: FormGroup;
+    submitted = false;
 
-  constructor(private formBuilder: FormBuilder) {}
+    private name: Name;
 
-  ngOnInit(): void {
-    this.form = this.formBuilder.group(
-      {
-        fullname: ['', Validators.required],
-        username: [
-          '',
-          [
-            Validators.required,
-            Validators.minLength(6),
-            Validators.maxLength(20)
-          ]
-        ],
-        email: ['', [Validators.required, Validators.email]],
-        password: [
-          '',
-          [
-            Validators.required,
-            Validators.minLength(6),
-            Validators.maxLength(40)
-          ]
-        ],
-        confirmPassword: ['', Validators.required],
-        acceptTerms: [false, Validators.requiredTrue]
-      },
-      {
-        validators: [Validation.match('password', 'confirmPassword')]
-      }
-    );
-  }
-
-  get f(): { [key: string]: AbstractControl } {
-    return this.form.controls;
-  }
-
-  onSubmit(): void {
-    this.submitted = true;
-
-    if (this.form.invalid) {
-      return;
+    constructor(private formBuilder: FormBuilder, private dummyService: DummyService) {
     }
 
-    console.log(JSON.stringify(this.form.value, null, 2));
-  }
+    ngOnInit(): void {
+        this.dummyService.getName().subscribe(name => this.name = name);
+        this.buildForm();
+    }
 
-  onReset(): void {
-    this.submitted = false;
-    this.form.reset();
-  }
+    onSubmit(): void {
+        this.submitted = true;
+
+        const submittedValue = this.form.value as Name;
+        alert(JSON.stringify(submittedValue, null, 2));
+    }
+
+    onReset(): void {
+        this.submitted = false;
+        this.form.reset();
+        this.ngOnInit();
+    }
+
+    buildForm(): void {
+        this.form = this.formBuilder.group(
+            {
+                firstName: [this.name.firstName, Validators.required],
+                lastName: [this.name.lastName, Validators.required],
+            }
+        );
+    }
 }
